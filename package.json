@@ -1,0 +1,15 @@
+{
+  "name": "web-rtmp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "buffer": "^5.0.0",
+    "simple-websocket": "^4.1.0"
+  }
+}

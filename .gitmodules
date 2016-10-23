@@ -1,0 +1,3 @@
+[submodule "node-rtmpapi"]
+	path = node-rtmpapi
+	url = ./node-rtmpapi
