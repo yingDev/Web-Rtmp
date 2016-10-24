@@ -24,7 +24,7 @@ module.exports = {
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({
 			onBuildStart:['say webpack'],
-			onBuildEnd:['say done & open "/Applications/Google Chrome.app"'],
+			onBuildEnd:['sed "s/{{buildTime}}/$(date)/g" index.template.html > index.html','say done & open "/Applications/Google Chrome.app"'],
 			dev:false}
 		)
 	]

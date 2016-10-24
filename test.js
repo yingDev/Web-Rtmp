@@ -19,7 +19,7 @@ sock.on('connect', function()
 {
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
-		console.log("rtmpSession...cb..ss.");
+		console.log("rtmpSession...cb...");
 		var msger = me.msg;
 		me.Q.Q(0,function()
 		{
