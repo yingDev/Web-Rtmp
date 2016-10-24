@@ -20,19 +20,18 @@ sock.on('connect', function()
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
 		console.log("rtmpSession...cb..ss.");
-		return;
 		var msger = me.msg;
 		me.Q.Q(0,function()
 		{
 			console.log("sending connect");
-			var chunk = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q});
+			var chunk = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
 			chunk.sendAmf0EncCmdMsg({
 				cmd: 'connect', 
 				transId:1, 
 				cmdObj:
 				{
 					app:"live",
-					tcUrl: "rtmp://0.0.0.0/live",
+					tcUrl: "rtmp://video.7uan7uan.com/live",
 					fpad: false,
 					capabilities: 15.0,
 					audioCodecs: 3191,
