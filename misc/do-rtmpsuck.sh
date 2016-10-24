@@ -15,4 +15,9 @@ pass out on en0 route-to lo0 inet proto tcp from en0 to any port 1935 keep state
 sudo rtmpsuck $@;
 
 # clear the pf rules:
+echo ''
+echo ''
+echo "====== restting pfctl rules ======="
+echo ''
+
 sudo pfctl -F all -f /etc/pf.conf
