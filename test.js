@@ -1,7 +1,7 @@
 var RTMP = require('./node-rtmpapi');
 var SimpleWebsocket = require('simple-websocket');
 
-var url = "ws://0.0.0.0:1999";
+var url = "ws://127.0.0.1:1999";
 
 var sock = new SimpleWebsocket(url);
 
@@ -19,7 +19,8 @@ sock.on('connect', function()
 {
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
-		console.log("rtmpSession...cb...");
+		console.log("rtmpSession...cb..ss.");
+		return;
 		var msger = me.msg;
 		me.Q.Q(0,function()
 		{
@@ -31,7 +32,7 @@ sock.on('connect', function()
 				cmdObj:
 				{
 					app:"live",
-					//tcUrl: "rtmp://video.7uan7uan.com/live",
+					tcUrl: "rtmp://0.0.0.0/live",
 					fpad: false,
 					capabilities: 15.0,
 					audioCodecs: 3191,

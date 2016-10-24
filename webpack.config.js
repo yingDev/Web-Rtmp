@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
     entry: "./test.js",
@@ -19,5 +20,12 @@ module.exports = {
             }
         ]
     },
-	plugins:[new webpack.optimize.DedupePlugin()]
+	plugins:[
+		new webpack.optimize.DedupePlugin(),
+		new WebpackShellPlugin({
+			onBuildStart:['say webpack'],
+			onBuildEnd:['say done & open "/Applications/Google Chrome.app"'],
+			dev:false}
+		)
+	]
 };
