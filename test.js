@@ -46,12 +46,12 @@ sock.on('connect', function()
 					videoCodecs: 252,
 					videoFunction: 1.0
 				}
-			});
+			}, 0);
 			invokeChannel.invokedMethods.push('connect');
 		});
 
 		me.Q.Q(0, function()
-		{return;
+		{
 			console.log("Begin LOOP");
 			msger.loop(function(chunkMsg)
 			{
