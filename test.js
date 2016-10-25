@@ -29,7 +29,7 @@ sock.on('connect', function()
 
 		var msger = me.msg;
 		me.Q.Q(0,function()
-		{return;
+		{
 			console.log("sending connect");
 			//var chunk = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
 			//todo: 先确定可行，再重构
