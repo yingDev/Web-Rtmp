@@ -11,8 +11,11 @@ pass out on en0 route-to lo0 inet proto tcp from en0 to any port 1935 keep state
 
 # check the pf rules:
 # sudo pfctl -s all
+say "starting r-t-m-p-suck";
 
 sudo rtmpsuck $@;
+
+say "r-t-m-p-suck Stopped.";
 
 # clear the pf rules:
 echo ''
