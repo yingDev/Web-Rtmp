@@ -24,7 +24,11 @@ module.exports = {
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({
 			onBuildStart:['say webpack'],
-			onBuildEnd:['sed "s/{{buildTime}}/$(date)/g" index.template.html > index.html','say done & open "/Applications/Google Chrome.app"'],
+			onBuildEnd:[
+				'sed "s/{{buildTime}}/$(date)/g" index.template.html > index.html',
+				'say done; open "/Applications/Google Chrome.app"',
+				'sleep 1; say reload page & osascript ./misc/reloadChrome.scpt "http://localhost:63342/web-rtmp/index.html"'
+			],
 			dev:false}
 		)
 	]
