@@ -25,8 +25,8 @@
       <file leaf-file-name="test.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="339">
-              <caret line="94" column="39" selection-start-line="94" selection-start-column="39" selection-end-line="94" selection-end-column="39" />
+            <state relative-caret-position="24">
+              <caret line="93" column="24" selection-start-line="93" selection-start-column="24" selection-end-line="93" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -57,8 +57,8 @@
       <file leaf-file-name="rtmpChunk.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/node-rtmpapi/rtmpChunk.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="138">
-              <caret line="540" column="7" selection-start-line="540" selection-start-column="7" selection-end-line="540" selection-end-column="7" />
+            <state relative-caret-position="273">
+              <caret line="373" column="3" selection-start-line="373" selection-start-column="3" selection-end-line="373" selection-end-column="3" />
               <folding />
             </state>
           </provider>
@@ -76,6 +76,16 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="324">
               <caret line="157" column="33" selection-start-line="157" selection-start-column="33" selection-end-line="157" selection-end-column="33" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="amfUtils.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/node-rtmpapi/node_modules/node-amfutils/amfUtils.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="282">
+              <caret line="935" column="44" selection-start-line="935" selection-start-column="34" selection-end-line="935" selection-end-column="44" />
               <folding />
             </state>
           </provider>
@@ -112,7 +122,7 @@
     <handled-path value="$PROJECT_DIR$/node_modules" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="656" />
+    <option name="x" value="1" />
     <option name="y" value="23" />
     <option name="width" value="1092" />
     <option name="height" value="997" />
@@ -317,12 +327,12 @@
       <workItem from="1477295463518" duration="10074000" />
       <workItem from="1477360896144" duration="12694000" />
       <workItem from="1477381028078" duration="10508000" />
-      <workItem from="1477399102188" duration="10104000" />
+      <workItem from="1477399102188" duration="12733000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="57035000" />
+    <option name="totallyTimeSpent" value="59664000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -334,7 +344,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="656" y="23" width="1092" height="997" extended-state="0" />
+    <frame x="1" y="23" width="1092" height="997" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19514473" sideWeight="0.49507388" order="0" side_tool="false" content_ui="combo" />
@@ -372,12 +382,18 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test.js</url>
-          <line>92</line>
+          <line>93</line>
           <properties />
           <option name="timeStamp" value="126" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test.js</url>
+          <line>108</line>
+          <properties />
+          <option name="timeStamp" value="130" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="127" />
+      <option name="time" value="131" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -621,14 +637,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/node-rtmpapi/node_modules/node-amfutils/amfUtils.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="14865">
-          <caret line="991" column="0" selection-start-line="991" selection-start-column="0" selection-end-line="991" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node-rtmpapi/node_modules/buffer/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19065">
@@ -679,14 +687,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/node-rtmpapi/rtmpChunk.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="540" column="7" selection-start-line="540" selection-start-column="7" selection-end-line="540" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node-rtmpapi/readQueue.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
@@ -703,10 +703,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/node-rtmpapi/node_modules/node-amfutils/amfUtils.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="282">
+          <caret line="935" column="44" selection-start-line="935" selection-start-column="34" selection-end-line="935" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node-rtmpapi/rtmpChunk.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="373" column="3" selection-start-line="373" selection-start-column="3" selection-end-line="373" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="339">
-          <caret line="94" column="39" selection-start-line="94" selection-start-column="39" selection-end-line="94" selection-end-column="39" />
+        <state relative-caret-position="24">
+          <caret line="93" column="24" selection-start-line="93" selection-start-column="24" selection-end-line="93" selection-end-column="24" />
           <folding />
         </state>
       </provider>

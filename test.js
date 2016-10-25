@@ -22,15 +22,16 @@ sock.on('data', function(data)
 
 sock.on('connect', function()
 {
+    var transId = 0;
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
 		console.log("rtmpSession...cb...");
 		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
-		invokeChannel.transId = 0;
 		invokeChannel.invokedMethods = []; //用来保存invoke的次数，以便收到消息的时候确认对应结果
 
 		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: true});
-		videoChannel.transId = 0;
+
+        var channel2 = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:2}, {sock: sock, Q: me.Q, debug: true});
 
 		var msger = me.msg;
 		me.Q.Q(0,function()
@@ -40,7 +41,7 @@ sock.on('connect', function()
 			//todo: 先确定可行，再重构
 			invokeChannel.sendAmf0EncCmdMsg({
 				cmd: 'connect', 
-				transId:++invokeChannel.transId,
+				transId:++transId,
 				cmdObj:
 				{
 					app:"live",
@@ -83,7 +84,7 @@ sock.on('connect', function()
                         console.log("sending createStream");
                         invokeChannel.sendAmf0EncCmdMsg({
                             cmd: 'createStream',
-                            transId: ++invokeChannel.transId,
+                            transId: ++transId,
                             cmdObj: null
                         });
                         invokeChannel.invokedMethods.push('createStream');
@@ -94,13 +95,10 @@ sock.on('connect', function()
                         //send play ??
                         videoChannel.sendAmf0EncCmdMsg({
                             cmd: 'play',
-                            transId: ++videoChannel.transId,
-                            cmdObj:{},
-                            streamName:"B012",
-                            start:0,
-                            duration:-1,
-                            reset:false
-                        });
+                            transId: 0,
+                            cmdObj:null,
+                            streamName:'B011'
+                        },0);
                     }
 
                 }
@@ -108,6 +106,11 @@ sock.on('connect', function()
                 {
                     console.log("onBWDone");
                     //send checkBW
+                    invokeChannel.sendAmf0EncCmdMsg({
+                        cmd: '_checkbw',
+                        transId: ++transId,
+                        cmdObj:null
+                    },0);
                 }
             }
 
