@@ -4,6 +4,7 @@ var SimpleWebsocket = require('simple-websocket');
 var url = "ws://127.0.0.1:1999";
 
 var sock = new SimpleWebsocket(url);
+sock.setMaxListeners(100);
 
 sock.on('close', function()
 {
@@ -27,7 +28,7 @@ sock.on('connect', function()
 	{
 		console.log("rtmpSession...cb...");
 		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
-		invokeChannel.invokedMethods = []; //用来保存invoke的次数，以便收到消息的时候确认对应结果
+		invokeChannel.invokedMethods = {}; //用来保存invoke的次数，以便收到消息的时候确认对应结果
 
 		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: true});
 
@@ -53,7 +54,7 @@ sock.on('connect', function()
 					videoFunction: 1.0
 				}
 			});
-			invokeChannel.invokedMethods.push('connect');
+			invokeChannel.invokedMethods[transId] = 'connect';
 		});
 
 		me.Q.Q(0, function()
@@ -76,29 +77,36 @@ sock.on('connect', function()
             {
                 if(msg.cmd == "_result")
                 {
-                    var invokeIdx = -1;
-                    if((invokeIdx = invokeChannel.invokedMethods.indexOf("connect")) >= 0) //确认是connect的结果
-                    {
-                        invokeChannel.invokedMethods.splice(invokeIdx, 1);
+	                var lastInvoke = invokeChannel.invokedMethods[msg.transId];
+	                if(lastInvoke)
+	                {
+		                console.log("<--Got Invoke Result for: " + lastInvoke);
+		                delete invokeChannel.invokedMethods[msg.transId];
+	                }
 
+                    if(lastInvoke == "connect") //确认是connect的结果
+                    {
                         console.log("sending createStream");
                         invokeChannel.sendAmf0EncCmdMsg({
                             cmd: 'createStream',
                             transId: ++transId,
                             cmdObj: null
                         });
-                        invokeChannel.invokedMethods.push('createStream');
+                        invokeChannel.invokedMethods[transId] = 'createStream';
                     }
-                    else if((invokeIdx = invokeChannel.invokedMethods.indexOf("createStream")) >= 0) //确认是createStream的结果
+                    else if(lastInvoke == "createStream") //确认是createStream的结果
                     {
-                        invokeChannel.invokedMethods.splice(invokeIdx, 1);
+	                    videoChannel.chunk.msgStreamId = msg.info;
                         //send play ??
                         videoChannel.sendAmf0EncCmdMsg({
                             cmd: 'play',
-                            transId: 0,
+                            transId: ++transId,
                             cmdObj:null,
-                            streamName:'B011'
+                            streamName:'B011',
+	                        start:-2
+
                         },0);
+	                    invokeChannel.invokedMethods[transId] = "play";
                     }
 
                 }
@@ -111,6 +119,7 @@ sock.on('connect', function()
                         transId: ++transId,
                         cmdObj:null
                     },0);
+	                invokeChannel.invokedMethods[transId] = "_checkbw";
                 }
             }
 
