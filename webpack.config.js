@@ -20,6 +20,9 @@ module.exports = {
             }
         ]
     },
+	/*externals: {
+		"broadway-player": "Broadway"
+	},*/
 	plugins:[
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({

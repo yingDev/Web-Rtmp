@@ -1,5 +1,13 @@
 var RTMP = require('./node-rtmpapi');
 var SimpleWebsocket = require('simple-websocket');
+//var Broadway = require('broadway-player');
+
+var vidCont = document.getElementById("vidCont");
+var player = new Player({
+		useWorker: false,
+		webgl: true 
+});
+vidCont.appendChild(player.canvas);
 
 var url = "ws://127.0.0.1:1999";
 
@@ -121,6 +129,11 @@ sock.on('connect', function()
                     },0);
 	                invokeChannel.invokedMethods[transId] = "_checkbw";
                 }
+            }
+
+            if(chunk.msgTypeText == "video")
+            {
+	            player.decode(chunk.data);
             }
 
             me.Q.Q(0,function(){

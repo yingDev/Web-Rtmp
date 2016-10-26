@@ -1,10 +1,18 @@
 <html>
 <head>
 <title>rtmp test</title>
+    <script src="./node_modules/broadway-player/Player/Decoder.js"></script>
+    <script src="./node_modules/broadway-player/Player/YUVCanvas.js"></script>
+    <script src="./node_modules/broadway-player/Player/Player.js"></script>
+    <script src="./node_modules/broadway-player/Player/stream.js"></script>
+    <script src="./node_modules/broadway-player/Player/Player.js"></script>
 </head>
 
 <body>
 	build time: {{buildTime}}
+
+	<div id="vidCont" style="width:300px; height:200px;">
+	</div>
 
 	<script type="text/javascript" src="build/bundle.js"></script>
 	<script type="text/javascript">
