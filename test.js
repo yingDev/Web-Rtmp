@@ -18,17 +18,45 @@ var player = new Player({
  webgl: true
 });
  vidCont.appendChild(player.canvas);
+player.onPictureDecoded = function()
+{
+	alert('finally');
+};
+
 
 flvParser.on("readable", function() {
 	var e;
 	while (e = flvParser.read())
 	{
-		console.log("VIDEO PACKET PARSED: ");
-		console.log(JSON.stringify(e));
-		if(e.packet)//video
-		{
-			console.log("FEEDING PLAYER DATA...");
-			player.decode(e.packet.data);
+		console.log("VIDEO PACKET PARSED: " + e );
+		//console.log(JSON.stringify(e));
+		if(e.packet && e.packet.type == 9)//video
+		{    var naltype = "invalid frame";
+
+			if (e.packet.data.length > 4)
+			{
+				var data = e.packet.data.slice(5);
+
+				if (data[4] == 0x65)
+				{
+					naltype = "I frame";
+				}
+				else if (data[4] == 0x41)
+				{
+					naltype = "P frame";
+				}
+				else if (data[4] == 0x67)
+				{
+					naltype = "SPS";
+				}
+				else if (data[4] == 0x68)
+				{
+					naltype = "PPS";
+				}
+				console.log("FEEDING PLAYER DATA... " + naltype);
+				player.decode(data);
+			}
+
 		}
 	}
 });
