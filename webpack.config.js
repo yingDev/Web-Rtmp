@@ -26,11 +26,12 @@ module.exports = {
 	plugins:[
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({
-			onBuildStart:['say hello'],
+			onBuildStart:['say Holy'],
 			onBuildEnd:[
 				'sed "s/{{buildTime}}/$(date)/g" index.template.html > index.html',
-				'say world; open "/Applications/Google Chrome.app"',
-				'sleep 1; say chrome & osascript ./misc/reloadChrome.scpt "http://localhost:63342/web-rtmp/index.html"'
+				'say Shit!'
+				//'say world; open "/Applications/Google Chrome.app"',
+				//'sleep 1; say chrome & osascript ./misc/reloadChrome.scpt "http://localhost:63342/web-rtmp/index.html"'
 			],
 			dev:false}
 		)

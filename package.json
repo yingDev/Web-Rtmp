@@ -12,6 +12,7 @@
     "babel-preset-es2015": "^6.16.0",
     "broadway-player": "^0.1.1",
     "buffer": "^5.0.0",
+    "flvee": "^0.0.1",
     "simple-websocket": "^4.1.0"
   },
   "devDependencies": {

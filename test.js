@@ -1,13 +1,38 @@
 var RTMP = require('./node-rtmpapi');
 var SimpleWebsocket = require('simple-websocket');
+var Buffer = require('buffer').Buffer;
+
 //var Broadway = require('broadway-player');
+var flvee = require('flvee');
+var flvParser = new flvee.Parser();
+
+const FLV_HEADER = new Buffer([ 'F'.charCodeAt(0), 'L'.charCodeAt(0), 'V'.charCodeAt(0), 0x01,
+	0x01,				/* 0x04 == audio, 0x01 == video */
+	0x00, 0x00, 0x00, 0x09,
+	0x00, 0x00, 0x00, 0x00
+]);
 
 var vidCont = document.getElementById("vidCont");
 var player = new Player({
-		useWorker: false,
-		webgl: true 
+ useWorker: false,
+ webgl: true
 });
-vidCont.appendChild(player.canvas);
+ vidCont.appendChild(player.canvas);
+
+flvParser.on("readable", function() {
+	var e;
+	while (e = flvParser.read())
+	{
+		console.log("VIDEO PACKET PARSED: ");
+		console.log(JSON.stringify(e));
+		if(e.packet)//video
+		{
+			console.log("FEEDING PLAYER DATA...");
+			player.decode(e.packet.data);
+		}
+	}
+});
+
 
 var url = "ws://127.0.0.1:1999";
 
@@ -81,6 +106,7 @@ sock.on('connect', function()
             //connect -> windowSize -> peerBw -> connetcResult ->
             //createStream -> onBWDown -> _checkbw -> onBWDoneResult -> createStreamResult -> play
 
+
             if(chunk.msgTypeText == "amf0cmd")
             {
                 if(msg.cmd == "_result")
@@ -110,13 +136,12 @@ sock.on('connect', function()
                             cmd: 'play',
                             transId: ++transId,
                             cmdObj:null,
-                            streamName:'B011',
+                            streamName:'B012',
 	                        start:-2
 
                         },0);
 	                    invokeChannel.invokedMethods[transId] = "play";
                     }
-
                 }
                 else if(msg.cmd == 'onBWDone')
                 {
@@ -133,8 +158,49 @@ sock.on('connect', function()
 
             if(chunk.msgTypeText == "video")
             {
-	            player.decode(chunk.data);
+	            var data = chunk.data;
+
+	            var vidHdr = new Buffer(11);
+	            vidHdr.writeUInt8(0x09,0);//type video
+
+	            vidHdr.writeUInt16BE(chunk.data.length >> 8, 1); //packet len
+	            vidHdr.writeUInt8(chunk.data.length & 0xFF, 3);
+
+	            vidHdr.writeInt32BE(0, 4); //ts
+	            vidHdr.writeUInt16BE(0 >> 8, 8); //stream id
+	            vidHdr.writeUInt8(0 & 0xFF, 10);
+
+	            var prevSize = new Buffer(4);
+	            prevSize.writeUInt32BE(data.length + 11);
+
+	            flvParser.write(Buffer.concat([vidHdr, data, prevSize]));
+	            //
             }
+
+	        if(chunk.msgTypeText == "amf0meta" && msg.cmd == 'onMetaData')
+	        {
+		        console.log("onmetadata");
+		        var chunkData = chunk.data;
+
+		        var metaHdr = new Buffer(11);
+		        metaHdr.writeUInt8(0x12,0);//type metadata
+
+		        metaHdr.writeUInt16BE(chunkData.length >> 8, 1); //packet len
+		        metaHdr.writeUInt8(chunkData.length & 0xFF, 3);
+
+		        metaHdr.writeInt32BE(0, 4); //ts
+		        metaHdr.writeUInt16BE(0 >> 8, 8); //stream id
+		        metaHdr.writeUInt8(0 & 0xFF, 10);
+
+		        var prevSize2 = new Buffer(4);
+		        prevSize2.writeUInt32BE(chunkData.length + 11);
+
+		        flvParser.write(Buffer.concat([FLV_HEADER,metaHdr, chunkData, prevSize2]));
+
+		        //var prevSize = new Buffer(4);
+			    //prevSize.writeUInt32BE(chunkData.length + 11);
+			    //flvParser.write(prevSize);
+	        }
 
             me.Q.Q(0,function(){
                 msger.loop(handleMessage);
