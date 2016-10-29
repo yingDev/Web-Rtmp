@@ -20,14 +20,18 @@ module.exports = {
             }
         ]
     },
+	/*externals: {
+		"broadway-player": "Broadway"
+	},*/
 	plugins:[
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({
-			onBuildStart:['say webpack'],
+			onBuildStart:['say begin'],
 			onBuildEnd:[
 				'sed "s/{{buildTime}}/$(date)/g" index.template.html > index.html',
-				'say done; open "/Applications/Google Chrome.app"',
-				'sleep 1; say reload page & osascript ./misc/reloadChrome.scpt "http://localhost:63342/web-rtmp/index.html"'
+				'say end!'
+				//'say world; open "/Applications/Google Chrome.app"',
+				//'sleep 1; say chrome & osascript ./misc/reloadChrome.scpt "http://localhost:63342/web-rtmp/index.html"'
 			],
 			dev:false}
 		)

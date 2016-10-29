@@ -1,9 +1,74 @@
 var RTMP = require('./node-rtmpapi');
 var SimpleWebsocket = require('simple-websocket');
+var Buffer = require('buffer').Buffer;
+
+//var Broadway = require('broadway-player');
+var flvee = require('flvee');
+var flvParser = new flvee.Parser();
+
+const FLV_HEADER = new Buffer([ 'F'.charCodeAt(0), 'L'.charCodeAt(0), 'V'.charCodeAt(0), 0x01,
+	0x01,				/* 0x04 == audio, 0x01 == video */
+	0x00, 0x00, 0x00, 0x09,
+	0x00, 0x00, 0x00, 0x00
+]);
+const H264_SEP = new Buffer([0,0,0,1]);
+
+
+var vidCont = document.getElementById("vidCont");
+var player = new Player({
+ useWorker: false,
+ webgl: false
+});
+ vidCont.appendChild(player.canvas);
+player.onPictureDecoded = function()
+{
+	alert('finally');
+};
+
+
+flvParser.on("readable", function() {
+	var e;
+	while (e = flvParser.read())
+	{
+		console.log("VIDEO PACKET PARSED: ");
+		console.log(JSON.stringify(e));
+		if(e.packet)//video
+		{    var naltype = "invalid frame";
+
+			if (e.packet.data.length > 4)
+			{
+
+				var data = Buffer.concat([H264_SEP, e.packet.data.slice(13)]);//header size 9
+
+				if (data[4] == 0x65)
+				{
+					naltype = "I frame";
+				}
+				else if (data[4] == 0x41)
+				{
+					naltype = "P frame";
+				}
+				else if (data[4] == 0x67)
+				{
+					naltype = "SPS";
+				}
+				else if (data[4] == 0x68)
+				{
+					naltype = "PPS";
+				}
+				console.log("FEEDING PLAYER DATA... " + naltype);
+				player.decode(data);
+			}
+
+		}
+	}
+});
+
 
 var url = "ws://127.0.0.1:1999";
 
 var sock = new SimpleWebsocket(url);
+sock.setMaxListeners(100);
 
 sock.on('close', function()
 {
@@ -26,8 +91,8 @@ sock.on('connect', function()
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
 		console.log("rtmpSession...cb...");
-		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
-		invokeChannel.invokedMethods = []; //用来保存invoke的次数，以便收到消息的时候确认对应结果
+		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:5}, {sock: sock, Q: me.Q, debug: true});
+		invokeChannel.invokedMethods = {}; //用来保存invoke的次数，以便收到消息的时候确认对应结果
 
 		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: true});
 
@@ -53,7 +118,7 @@ sock.on('connect', function()
 					videoFunction: 1.0
 				}
 			});
-			invokeChannel.invokedMethods.push('connect');
+			invokeChannel.invokedMethods[transId] = 'connect';
 		});
 
 		me.Q.Q(0, function()
@@ -72,35 +137,42 @@ sock.on('connect', function()
             //connect -> windowSize -> peerBw -> connetcResult ->
             //createStream -> onBWDown -> _checkbw -> onBWDoneResult -> createStreamResult -> play
 
+
             if(chunk.msgTypeText == "amf0cmd")
             {
                 if(msg.cmd == "_result")
                 {
-                    var invokeIdx = -1;
-                    if((invokeIdx = invokeChannel.invokedMethods.indexOf("connect")) >= 0) //确认是connect的结果
-                    {
-                        invokeChannel.invokedMethods.splice(invokeIdx, 1);
+	                var lastInvoke = invokeChannel.invokedMethods[msg.transId];
+	                if(lastInvoke)
+	                {
+		                console.log("<--Got Invoke Result for: " + lastInvoke);
+		                delete invokeChannel.invokedMethods[msg.transId];
+	                }
 
+                    if(lastInvoke == "connect") //确认是connect的结果
+                    {
                         console.log("sending createStream");
                         invokeChannel.sendAmf0EncCmdMsg({
                             cmd: 'createStream',
                             transId: ++transId,
                             cmdObj: null
                         });
-                        invokeChannel.invokedMethods.push('createStream');
+                        invokeChannel.invokedMethods[transId] = 'createStream';
                     }
-                    else if((invokeIdx = invokeChannel.invokedMethods.indexOf("createStream")) >= 0) //确认是createStream的结果
+                    else if(lastInvoke == "createStream") //确认是createStream的结果
                     {
-                        invokeChannel.invokedMethods.splice(invokeIdx, 1);
+	                    videoChannel.chunk.msgStreamId = msg.info;
                         //send play ??
                         videoChannel.sendAmf0EncCmdMsg({
                             cmd: 'play',
-                            transId: 0,
+                            transId: ++transId,
                             cmdObj:null,
-                            streamName:'B011'
-                        },0);
-                    }
+                            streamName:'B012',
+	                        start:-2
 
+                        },0);
+	                    invokeChannel.invokedMethods[transId] = "play";
+                    }
                 }
                 else if(msg.cmd == 'onBWDone')
                 {
@@ -111,8 +183,57 @@ sock.on('connect', function()
                         transId: ++transId,
                         cmdObj:null
                     },0);
+	                invokeChannel.invokedMethods[transId] = "_checkbw";
                 }
             }
+
+            if(chunk.msgTypeText == "video")
+            {
+	            var data = chunk.data;
+
+	            var vidHdr = new Buffer(11);
+	            vidHdr.writeUInt8(0x09,0);//type video
+
+	            vidHdr.writeUInt16BE(chunk.data.length >> 8, 1); //packet len
+	            vidHdr.writeUInt8(chunk.data.length & 0xFF, 3);
+
+	            vidHdr.writeInt32BE(0, 4); //ts
+	            vidHdr.writeUInt16BE(0 >> 8, 8); //stream id
+	            vidHdr.writeUInt8(0 & 0xFF, 10);
+
+	            var prevSize = new Buffer(4);
+	            prevSize.writeUInt32BE(data.length + 11);
+
+	            //console.log("RAW DATA: ");
+	            //console.log(JSON.stringify(data));
+	            flvParser.write(Buffer.concat([vidHdr, data, prevSize]));
+	            //
+            }
+
+	        if(chunk.msgTypeText == "amf0meta" && msg.cmd == 'onMetaData')
+	        {
+		        console.log("onmetadata");
+		        var chunkData = chunk.data;
+
+		        var metaHdr = new Buffer(11);
+		        metaHdr.writeUInt8(0x12,0);//type metadata
+
+		        metaHdr.writeUInt16BE(chunkData.length >> 8, 1); //packet len
+		        metaHdr.writeUInt8(chunkData.length & 0xFF, 3);
+
+		        metaHdr.writeInt32BE(0, 4); //ts
+		        metaHdr.writeUInt16BE(0 >> 8, 8); //stream id
+		        metaHdr.writeUInt8(0 & 0xFF, 10);
+
+		        var prevSize2 = new Buffer(4);
+		        prevSize2.writeUInt32BE(chunkData.length + 11);
+
+		        flvParser.write(Buffer.concat([FLV_HEADER,metaHdr, chunkData, prevSize2]));
+
+		        //var prevSize = new Buffer(4);
+			    //prevSize.writeUInt32BE(chunkData.length + 11);
+			    //flvParser.write(prevSize);
+	        }
 
             me.Q.Q(0,function(){
                 msger.loop(handleMessage);
