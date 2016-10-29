@@ -20,25 +20,59 @@ var player = new Player({
  webgl: false
 });
  vidCont.appendChild(player.canvas);
-player.onPictureDecoded = function()
+/*player.onPictureDecoded = function()
 {
 	alert('finally');
-};
+};*/
+var encodeLookup = '0123456789abcdef'.split('');
+var decodeLookup = [];
+var i = 0;
+while (i < 10) decodeLookup[0x30 + i] = i++;
+while (i < 16) decodeLookup[0x61 - 10 + i] = i++;
 
+function dumpArray(array)
+{
+	var length = array.length;
+	var string = '';
+	var c, i = 0;
+	while (i < length)
+	{
+		c = array[i++];
+		string += encodeLookup[(c & 0xF0) >> 4] + encodeLookup[c & 0xF];
+		string += ' ';
+	}
+	console.log(string);
+}
 
 flvParser.on("readable", function() {
 	var e;
 	while (e = flvParser.read())
 	{
-		console.log("VIDEO PACKET PARSED: ");
-		console.log(JSON.stringify(e));
 		if(e.packet)//video
-		{    var naltype = "invalid frame";
+		{
+            console.log("VIDEO PACKET PARSED: ");
+            dumpArray(e.packet.data);
 
+            var naltype = "invalid frame";
 			if (e.packet.data.length > 4)
 			{
+                var data = e.packet.data;
 
-				var data = Buffer.concat([H264_SEP, e.packet.data.slice(13)]);//header size 9
+                if(e.packet && e.packet.type == 9)
+                {
+                    dumpArray(data);
+                    console.log("\n");
+
+                    if(data[1] === 1)
+                    {
+                        data = Buffer.concat([H264_SEP, data.slice(9)]);
+                    }else if(data[1] === 0)
+                    {
+                        var spsSize = (data[11] << 8) | data[12];
+                        var spsEnd = 13 + spsSize;
+                        data = Buffer.concat([H264_SEP, data.slice(13, spsEnd), H264_SEP, data.slice(spsEnd + 3)]);
+                    }
+                }
 
 				if (data[4] == 0x65)
 				{
