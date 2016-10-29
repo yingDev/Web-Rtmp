@@ -5,18 +5,20 @@ var Buffer = require('buffer').Buffer;
 const H264_SEP = new Buffer([0,0,0,1]);
 const FRAME_Q_SIZE = 15;
 
+const url = {host: "ws://127.0.0.1:1999", app:"live",  stream: "B012"};
+
 var frameQ = [];
-var fps = 1000.0/20;
+var fps = 20;
 var lastRenderTime = 0;
-var vidCont = document.getElementById("vidCont");
-var player = new Player({
-    useWorker: false,
-    webgl: true
-});
-player.canvas.style['height'] = '100%';
-vidCont.appendChild(player.canvas);
 
 var decoder = new Decoder();
+var player = new Player({ useWorker: false, webgl: true });
+player.canvas.style['height'] = '100%';
+document.getElementById("vidCont").appendChild(player.canvas);
+
+var sock = new SimpleWebsocket(url.host);
+sock.setMaxListeners(100);
+
 decoder.onPictureDecoded = function(buffer, width, height, infos)
 {
     if(frameQ.length === FRAME_Q_SIZE)
@@ -26,6 +28,7 @@ decoder.onPictureDecoded = function(buffer, width, height, infos)
     }
     frameQ.push({data: Buffer.from(buffer), width: width, height: height, canvasObj: player.canvasObj});
 };
+
 function drawFrame()
 {
     var now = new Date();//如果播放速度跟不上网络速度，跳帧
@@ -46,16 +49,10 @@ function drawFrame()
     lastRenderTime = now;
 }
 
-
-var url = "ws://127.0.0.1:1999";
-
-var sock = new SimpleWebsocket(url);
-sock.setMaxListeners(100);
-
 sock.on('connect', function()
 {
     var transId = 0;
-	var stream = new RTMP.rtmpSession(sock, true, function(me)
+	var session = new RTMP.rtmpSession(sock, true, function(me)
 	{
 		console.log("rtmpSession...cb...");
 		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:5}, {sock: sock, Q: me.Q, debug: false});
@@ -63,20 +60,18 @@ sock.on('connect', function()
 
 		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: false});
 
-        var channel2 = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:2}, {sock: sock, Q: me.Q, debug: false});
-
 		var msger = me.msg;
 		me.Q.Q(0,function()
 		{
 			console.log("sending connect");
-			//var chunk = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
+
 			//todo: 先确定可行，再重构
 			invokeChannel.sendAmf0EncCmdMsg({
 				cmd: 'connect', 
 				transId:++transId,
 				cmdObj:
 				{
-					app:"live",
+					app: url.app,
 					tcUrl: "rtmp://video.7uan7uan.com/live",
 					fpad: false,
 					capabilities: 15.0,
@@ -131,7 +126,7 @@ sock.on('connect', function()
                             cmd: 'play',
                             transId: ++transId,
                             cmdObj:null,
-                            streamName:'B011',
+                            streamName: url.stream,
 	                        start:-2
 
                         },0);
