@@ -2,28 +2,16 @@ var RTMP = require('./node-rtmpapi');
 var SimpleWebsocket = require('simple-websocket');
 var Buffer = require('buffer').Buffer;
 
-//var Broadway = require('broadway-player');
-var flvee = require('flvee');
-var flvParser = new flvee.Parser();
-
-const FLV_HEADER = new Buffer([ 'F'.charCodeAt(0), 'L'.charCodeAt(0), 'V'.charCodeAt(0), 0x01,
-	0x01,				/* 0x04 == audio, 0x01 == video */
-	0x00, 0x00, 0x00, 0x09,
-	0x00, 0x00, 0x00, 0x00
-]);
 const H264_SEP = new Buffer([0,0,0,1]);
-
 
 var vidCont = document.getElementById("vidCont");
 var player = new Player({
  useWorker: false,
- webgl: false
+ webgl: true
 });
+player.canvas.style['height'] = '100%';
  vidCont.appendChild(player.canvas);
-/*player.onPictureDecoded = function()
-{
-	alert('finally');
-};*/
+
 var encodeLookup = '0123456789abcdef'.split('');
 var decodeLookup = [];
 var i = 0;
@@ -44,80 +32,10 @@ function dumpArray(array)
 	console.log(string);
 }
 
-flvParser.on("readable", function() {
-	var e;
-	while (e = flvParser.read())
-	{
-		if(e.packet)//video
-		{
-            console.log("VIDEO PACKET PARSED: ");
-            dumpArray(e.packet.data);
-
-            var naltype = "invalid frame";
-			if (e.packet.data.length > 4)
-			{
-                var data = e.packet.data;
-
-                if(e.packet && e.packet.type == 9)
-                {
-                    dumpArray(data);
-                    console.log("\n");
-
-                    if(data[1] === 1)
-                    {
-                        data = Buffer.concat([H264_SEP, data.slice(9)]);
-                    }else if(data[1] === 0)
-                    {
-                        var spsSize = (data[11] << 8) | data[12];
-                        var spsEnd = 13 + spsSize;
-                        data = Buffer.concat([H264_SEP, data.slice(13, spsEnd), H264_SEP, data.slice(spsEnd + 3)]);
-                    }
-                }
-
-				if (data[4] == 0x65)
-				{
-					naltype = "I frame";
-				}
-				else if (data[4] == 0x41)
-				{
-					naltype = "P frame";
-				}
-				else if (data[4] == 0x67)
-				{
-					naltype = "SPS";
-				}
-				else if (data[4] == 0x68)
-				{
-					naltype = "PPS";
-				}
-				console.log("FEEDING PLAYER DATA... " + naltype);
-				player.decode(data);
-			}
-
-		}
-	}
-});
-
-
 var url = "ws://127.0.0.1:1999";
 
 var sock = new SimpleWebsocket(url);
 sock.setMaxListeners(100);
-
-sock.on('close', function()
-{
-	console.log("WTF... Socket Closed ");
-});
-
-sock.on('error', function(e)
-{
-	console.log("WTF... Socket Error: " + e);
-});
-
-sock.on('data', function(data)
-{
-	console.log("Note: incoming raw data: " + data.length + " bytes");
-});
 
 sock.on('connect', function()
 {
@@ -125,12 +43,12 @@ sock.on('connect', function()
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
 		console.log("rtmpSession...cb...");
-		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:5}, {sock: sock, Q: me.Q, debug: true});
+		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:5}, {sock: sock, Q: me.Q, debug: false});
 		invokeChannel.invokedMethods = {}; //用来保存invoke的次数，以便收到消息的时候确认对应结果
 
-		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: true});
+		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: false});
 
-        var channel2 = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:2}, {sock: sock, Q: me.Q, debug: true});
+        var channel2 = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:2}, {sock: sock, Q: me.Q, debug: false});
 
 		var msger = me.msg;
 		me.Q.Q(0,function()
@@ -168,9 +86,6 @@ sock.on('connect', function()
 
             console.log("GOT MESSAGE: " + chunk.msgTypeText);
             console.log("===========>\n" + JSON.stringify(msg));
-            //connect -> windowSize -> peerBw -> connetcResult ->
-            //createStream -> onBWDown -> _checkbw -> onBWDoneResult -> createStreamResult -> play
-
 
             if(chunk.msgTypeText == "amf0cmd")
             {
@@ -201,7 +116,7 @@ sock.on('connect', function()
                             cmd: 'play',
                             transId: ++transId,
                             cmdObj:null,
-                            streamName:'B012',
+                            streamName:'B011',
 	                        start:-2
 
                         },0);
@@ -223,7 +138,26 @@ sock.on('connect', function()
 
             if(chunk.msgTypeText == "video")
             {
-	            var data = chunk.data;
+                var chunkData = chunk.data;
+                if (chunkData.length > 4)
+                {
+                    //dumpArray(data);
+                    //console.log("\n");
+
+                    if (chunkData[1] === 1)
+                    {
+                        chunkData = Buffer.concat([H264_SEP, chunkData.slice(9)]);
+                    }
+                    else if (chunkData[1] === 0)
+                    {
+                        var spsSize = (chunkData[11] << 8) | chunkData[12];
+                        var spsEnd = 13 + spsSize;
+                        chunkData = Buffer.concat([H264_SEP, chunkData.slice(13, spsEnd), H264_SEP, chunkData.slice(spsEnd + 3)]);
+                    }
+                    player.decode(chunkData);
+                }
+
+	            /*var data = chunk.data;
 
 	            var vidHdr = new Buffer(11);
 	            vidHdr.writeUInt8(0x09,0);//type video
@@ -241,15 +175,14 @@ sock.on('connect', function()
 	            //console.log("RAW DATA: ");
 	            //console.log(JSON.stringify(data));
 	            flvParser.write(Buffer.concat([vidHdr, data, prevSize]));
-	            //
+	            //*/
             }
 
 	        if(chunk.msgTypeText == "amf0meta" && msg.cmd == 'onMetaData')
 	        {
 		        console.log("onmetadata");
-		        var chunkData = chunk.data;
 
-		        var metaHdr = new Buffer(11);
+		        /*var metaHdr = new Buffer(11);
 		        metaHdr.writeUInt8(0x12,0);//type metadata
 
 		        metaHdr.writeUInt16BE(chunkData.length >> 8, 1); //packet len
@@ -266,7 +199,7 @@ sock.on('connect', function()
 
 		        //var prevSize = new Buffer(4);
 			    //prevSize.writeUInt32BE(chunkData.length + 11);
-			    //flvParser.write(prevSize);
+			    //flvParser.write(prevSize);*/
 	        }
 
             me.Q.Q(0,function(){
