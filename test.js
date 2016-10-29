@@ -32,9 +32,7 @@ decoder.onPictureDecoded = function(buffer, width, height, infos)
 function drawFrame()
 {
     var now = new Date();//如果播放速度跟不上网络速度，跳帧
-    var dur = Math.abs(now - lastRenderTime);
-    var frameInterval = 1000 / fps;
-    var skipFrame = Math.floor(dur / frameInterval) - 1;
+    var skipFrame = Math.floor(Math.abs(now - lastRenderTime) / (1000 / fps) ) - 1;
     if(lastRenderTime && skipFrame > 0)
     {
         console.log("SkipFrmae = " + skipFrame);
