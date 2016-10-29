@@ -3,34 +3,49 @@ var SimpleWebsocket = require('simple-websocket');
 var Buffer = require('buffer').Buffer;
 
 const H264_SEP = new Buffer([0,0,0,1]);
+const FRAME_Q_SIZE = 15;
 
+var frameQ = [];
+var fps = 1000.0/20;
+var lastRenderTime = 0;
 var vidCont = document.getElementById("vidCont");
 var player = new Player({
- useWorker: false,
- webgl: true
+    useWorker: false,
+    webgl: true
 });
 player.canvas.style['height'] = '100%';
- vidCont.appendChild(player.canvas);
+vidCont.appendChild(player.canvas);
 
-var encodeLookup = '0123456789abcdef'.split('');
-var decodeLookup = [];
-var i = 0;
-while (i < 10) decodeLookup[0x30 + i] = i++;
-while (i < 16) decodeLookup[0x61 - 10 + i] = i++;
-
-function dumpArray(array)
+var decoder = new Decoder();
+decoder.onPictureDecoded = function(buffer, width, height, infos)
 {
-	var length = array.length;
-	var string = '';
-	var c, i = 0;
-	while (i < length)
-	{
-		c = array[i++];
-		string += encodeLookup[(c & 0xF0) >> 4] + encodeLookup[c & 0xF];
-		string += ' ';
-	}
-	console.log(string);
+    if(frameQ.length === FRAME_Q_SIZE)
+    {
+        console.log("** drop oldest frame!");
+        frameQ.shift(); //如果播放速度跟不上，扔掉最老那一帧
+    }
+    frameQ.push({data: Buffer.from(buffer), width: width, height: height, canvasObj: player.canvasObj});
+};
+function drawFrame()
+{
+    var now = new Date();//如果播放速度跟不上网络速度，跳帧
+    var dur = Math.abs(now - lastRenderTime);
+    var frameInterval = 1000 / fps;
+    var skipFrame = Math.floor(dur / frameInterval) - 1;
+    if(lastRenderTime && skipFrame > 0)
+    {
+        console.log("SkipFrmae = " + skipFrame);
+        while(skipFrame-- > 0 && frameQ.length > 0) frameQ.shift();
+    }
+
+    var frame = frameQ.shift();
+    if(frame)
+    {
+        player.renderFrameWebGL(frame);
+    }
+    lastRenderTime = now;
 }
+
 
 var url = "ws://127.0.0.1:1999";
 
@@ -141,9 +156,6 @@ sock.on('connect', function()
                 var chunkData = chunk.data;
                 if (chunkData.length > 4)
                 {
-                    //dumpArray(data);
-                    //console.log("\n");
-
                     if (chunkData[1] === 1)
                     {
                         chunkData = Buffer.concat([H264_SEP, chunkData.slice(9)]);
@@ -154,55 +166,21 @@ sock.on('connect', function()
                         var spsEnd = 13 + spsSize;
                         chunkData = Buffer.concat([H264_SEP, chunkData.slice(13, spsEnd), H264_SEP, chunkData.slice(spsEnd + 3)]);
                     }
-                    player.decode(chunkData);
+                    decoder.decode(chunkData);
+                    //player.decode(chunkData);
                 }
-
-	            /*var data = chunk.data;
-
-	            var vidHdr = new Buffer(11);
-	            vidHdr.writeUInt8(0x09,0);//type video
-
-	            vidHdr.writeUInt16BE(chunk.data.length >> 8, 1); //packet len
-	            vidHdr.writeUInt8(chunk.data.length & 0xFF, 3);
-
-	            vidHdr.writeInt32BE(0, 4); //ts
-	            vidHdr.writeUInt16BE(0 >> 8, 8); //stream id
-	            vidHdr.writeUInt8(0 & 0xFF, 10);
-
-	            var prevSize = new Buffer(4);
-	            prevSize.writeUInt32BE(data.length + 11);
-
-	            //console.log("RAW DATA: ");
-	            //console.log(JSON.stringify(data));
-	            flvParser.write(Buffer.concat([vidHdr, data, prevSize]));
-	            //*/
             }
 
 	        if(chunk.msgTypeText == "amf0meta" && msg.cmd == 'onMetaData')
 	        {
 		        console.log("onmetadata");
-
-		        /*var metaHdr = new Buffer(11);
-		        metaHdr.writeUInt8(0x12,0);//type metadata
-
-		        metaHdr.writeUInt16BE(chunkData.length >> 8, 1); //packet len
-		        metaHdr.writeUInt8(chunkData.length & 0xFF, 3);
-
-		        metaHdr.writeInt32BE(0, 4); //ts
-		        metaHdr.writeUInt16BE(0 >> 8, 8); //stream id
-		        metaHdr.writeUInt8(0 & 0xFF, 10);
-
-		        var prevSize2 = new Buffer(4);
-		        prevSize2.writeUInt32BE(chunkData.length + 11);
-
-		        flvParser.write(Buffer.concat([FLV_HEADER,metaHdr, chunkData, prevSize2]));
-
-		        //var prevSize = new Buffer(4);
-			    //prevSize.writeUInt32BE(chunkData.length + 11);
-			    //flvParser.write(prevSize);*/
+                fps = chunk.msg['event']['framerate'];
+                console.log("fps = "+fps);
+                setInterval(drawFrame, 1000.0/fps);
 	        }
 
-            me.Q.Q(0,function(){
+            me.Q.Q(0,function()
+            {
                 msger.loop(handleMessage);
             });
         }

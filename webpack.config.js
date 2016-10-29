@@ -20,9 +20,9 @@ module.exports = {
             }
         ]
     },
-	/*externals: {
-		"broadway-player": "Broadway"
-	},*/
+	externals: {
+		"broadway": "broadway-player"
+	},
 	plugins:[
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({
