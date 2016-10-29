@@ -11,11 +11,13 @@ const FLV_HEADER = new Buffer([ 'F'.charCodeAt(0), 'L'.charCodeAt(0), 'V'.charCo
 	0x00, 0x00, 0x00, 0x09,
 	0x00, 0x00, 0x00, 0x00
 ]);
+const H264_SEP = new Buffer([0,0,0,1]);
+
 
 var vidCont = document.getElementById("vidCont");
 var player = new Player({
  useWorker: false,
- webgl: true
+ webgl: false
 });
  vidCont.appendChild(player.canvas);
 player.onPictureDecoded = function()
@@ -28,14 +30,15 @@ flvParser.on("readable", function() {
 	var e;
 	while (e = flvParser.read())
 	{
-		console.log("VIDEO PACKET PARSED: " + e );
-		//console.log(JSON.stringify(e));
-		if(e.packet && e.packet.type == 9)//video
+		console.log("VIDEO PACKET PARSED: ");
+		console.log(JSON.stringify(e));
+		if(e.packet)//video
 		{    var naltype = "invalid frame";
 
 			if (e.packet.data.length > 4)
 			{
-				var data = e.packet.data.slice(5);
+
+				var data = Buffer.concat([H264_SEP, e.packet.data.slice(13)]);//header size 9
 
 				if (data[4] == 0x65)
 				{
@@ -88,7 +91,7 @@ sock.on('connect', function()
 	var stream = new RTMP.rtmpSession(sock, true, function(me)
 	{
 		console.log("rtmpSession...cb...");
-		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:3}, {sock: sock, Q: me.Q, debug: true});
+		var invokeChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:5}, {sock: sock, Q: me.Q, debug: true});
 		invokeChannel.invokedMethods = {}; //用来保存invoke的次数，以便收到消息的时候确认对应结果
 
 		var videoChannel = new RTMP.rtmpChunk.RtmpChunkMsgClass({streamId:8}, {sock: sock, Q: me.Q, debug: true});
@@ -201,6 +204,8 @@ sock.on('connect', function()
 	            var prevSize = new Buffer(4);
 	            prevSize.writeUInt32BE(data.length + 11);
 
+	            //console.log("RAW DATA: ");
+	            //console.log(JSON.stringify(data));
 	            flvParser.write(Buffer.concat([vidHdr, data, prevSize]));
 	            //
             }
