@@ -8,7 +8,7 @@
     ```
 - 浏览器中使用 [node-rtmpapi](https://github.com/delian/node-rtmpapi) 解析 RTMP 协议，完成握手和通信。 ([yingDev的fork](https://github.com/yingDev/node-rtmpapi) 增加了浏览器支持、修正了几个错误)
 
-- 提取其中的H264视频流
+- 提取其中的 H264 视频流
 
 - 发送给 [Broadway](https://github.com/mbebenita/Broadway) 解码
     ```js
@@ -17,7 +17,7 @@
     
 # 使用
 ```js
-var player = new WebRtmpPlayer('ws://127.0.0.1:1999', 'live', 'B011', 'rtmp://<rtmp_server>/<app>');
+var player = new WebRtmpPlayer('ws://127.0.0.1:1999', '<app>', '<streamName>', 'rtmp://<rtmp_server>/<app>');
 player.canvas.style['height'] = '100%';
 document.getElementById("vidCont").appendChild(player.canvas);
 ```
