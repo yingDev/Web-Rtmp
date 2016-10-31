@@ -28,7 +28,11 @@ git clone https://github.com/yingDev/Web-Rtmp.git
 cd Web-Rtmp
 git submodule update --init --recursive
 cnpm install
-webpack
+```
+
+```bash
+# set your rtmp params in test.js first, then 
+webpack -w
 ```
 ```bash
 # setup test server
