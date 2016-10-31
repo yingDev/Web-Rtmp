@@ -17,7 +17,7 @@
     
 # 使用
 ```js
-var player = new WebRtmpPlayer('ws://127.0.0.1:1999', 'live', 'B011', 'rtmp://<rtmp_server>/<app>');
+var player = new WebRtmpPlayer('ws://127.0.0.1:1999', '<app>', '<streamName>', 'rtmp://<rtmp_server>/<app>');
 player.canvas.style['height'] = '100%';
 document.getElementById("vidCont").appendChild(player.canvas);
 ```
