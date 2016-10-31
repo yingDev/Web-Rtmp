@@ -14,6 +14,7 @@
     ```js
     decoder.decode(frame);
     ```
+    
 # 使用
 ```js
 var player = new WebRtmpPlayer('ws://127.0.0.1:1999', 'live', 'B011', 'rtmp://<rtmp_server>live');
