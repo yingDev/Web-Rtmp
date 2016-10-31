@@ -1,3 +1,6 @@
 [submodule "node-rtmpapi"]
 	path = node-rtmpapi
 	url = https://github.com/yingDev/node-rtmpapi.git
+[submodule "websockify"]
+	path = websockify
+	url = https://github.com/yingDev/websockify.git
