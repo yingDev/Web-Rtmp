@@ -2,7 +2,7 @@
 在网页上播放RTMP视频流，通过Websocket。
 
 # 基本原理
-- 服务端使用 [websockify](https://github.com/kanaka/websockify)  中转一个rtmp流。 ([yingDev的fork](https://github.com/yingDev/websockify) 去掉了base64子协议检查)
+- 服务端使用 [websockify](https://github.com/kanaka/websockify)  中转一个rtmp服务器地址。 ([yingDev的fork](https://github.com/yingDev/websockify) 去掉了base64子协议检查)
     ```bash
     ./websockify.py 1999 <rtmp_server>:1935
     ```
