@@ -17,7 +17,7 @@
     
 # 使用
 ```js
-var player = new WebRtmpPlayer('ws://127.0.0.1:1999', 'live', 'B011', 'rtmp://<rtmp_server>live');
+var player = new WebRtmpPlayer('ws://127.0.0.1:1999', 'live', 'B011', 'rtmp://<rtmp_server>/<app>');
 player.canvas.style['height'] = '100%';
 document.getElementById("vidCont").appendChild(player.canvas);
 ```
@@ -40,7 +40,7 @@ open index.html
 
 # 局限
 - Broadway: 
-    > The decoder ...does not support weighted prediction for P-frames and CABAC entropy encoding...
+   <blockquote> The decoder ...does not support weighted prediction for P-frames and CABAC entropy encoding...</blockquote>
  
 # 参考资料
 - Real-Time Messaging Protocol (RTMP) specification <br>
