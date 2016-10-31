@@ -19,6 +19,7 @@
 ## 使用
 ```js
 //比如 rtmp://helloworld.com/live/abc ---> app='live', streamName='abc', rtmp_server='helloworld.com'
+// ./websockify.py 1999 helloworld.com:1935
 var player = new WebRtmpPlayer('ws://127.0.0.1:1999', '<app>', '<streamName>', 'rtmp://<rtmp_server>/<app>');
 player.canvas.style['height'] = '100%';
 document.getElementById("vidCont").appendChild(player.canvas);
