@@ -2,7 +2,7 @@ var webpack = require('webpack');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
-    entry: "./test.js",
+    entry: "./WebRtmpPlayer.js",
     output: {
         path: __dirname + "/build/",
         filename: "bundle.js"
@@ -26,10 +26,10 @@ module.exports = {
 	plugins:[
 		new webpack.optimize.DedupePlugin(),
 		new WebpackShellPlugin({
-			onBuildStart:['say begin'],
+			onBuildStart:[/*'say begin'*/],
 			onBuildEnd:[
 				'sed "s/{{buildTime}}/$(date)/g" index.template.html > index.html',
-				'say end!'
+				//'say end!'
 				//'say world; open "/Applications/Google Chrome.app"',
 				//'sleep 1; say chrome & osascript ./misc/reloadChrome.scpt "http://localhost:63342/web-rtmp/index.html"'
 			],
