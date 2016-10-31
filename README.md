@@ -38,9 +38,9 @@ open index.html
 ```
 
 # 局限
-- Broadway
-> The decoder ...does not support weighted prediction for P-frames and CABAC entropy encoding...
-
+- Broadway: 
+    > The decoder ...does not support weighted prediction for P-frames and CABAC entropy encoding...
+ 
 # 参考资料
 - Real-Time Messaging Protocol (RTMP) specification <br>
 http://www.adobe.com/devnet/rtmp.html
