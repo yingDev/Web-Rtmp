@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "babel-preset-es2015": "^6.16.0",
+    "broadway-player": "^0.1.1",
     "buffer": "^5.0.0",
     "simple-websocket": "^4.1.0"
   },
