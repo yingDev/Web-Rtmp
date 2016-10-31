@@ -2,7 +2,7 @@ var webpack = require('webpack');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
-    entry: "./WebRtmpPlayer.js",
+    entry: "./test.js",
     output: {
         path: __dirname + "/build/",
         filename: "bundle.js"
