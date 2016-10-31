@@ -1,12 +1,11 @@
 {
   "name": "web-rtmp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Play rtmp video stream on the web page",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "yingDev",
   "license": "ISC",
   "dependencies": {
     "babel-preset-es2015": "^6.16.0",
