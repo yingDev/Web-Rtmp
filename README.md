@@ -4,6 +4,7 @@
 ## 基本原理
 - 服务端
 	- 使用 [websockify](https://github.com/kanaka/websockify)  wrap 一个 rtmp 服务器地址。 ([yingDev的fork](https://github.com/yingDev/websockify) 去掉了base64子协议检查)
+	
      ```bash
      ./websockify.py 1999 <rtmp_server>:1935
      ```
@@ -13,6 +14,7 @@
 	- 提取其中的 H264 视频流
 
 	- 喂给 [Broadway](https://github.com/mbebenita/Broadway) 解码
+	
    	 ```js
     decoder.decode(frame);
    	 ```
