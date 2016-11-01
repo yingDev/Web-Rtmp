@@ -14,7 +14,7 @@ class WebRtmpPlayer
 		this._lastRenderTime = 0;
 
 		this._decoder = new Decoder();
-		this._player = new Player({ useWorker: false, webgl: true });
+		this._player = new Player({ useWorker: false });
 		this._url = {host: wsHost, app: app, tcUrl: tcUrl, stream: streamName};
 
 		this._decoder.onPictureDecoded = this._onPictureDecoded.bind(this);
@@ -51,13 +51,13 @@ class WebRtmpPlayer
 		if(this._lastRenderTime && skipFrame > 0)
 		{
 			console.log("SkipFrmae = " + skipFrame);
-			while(skipFrame-- > 0 && this._frameQ.length > 0) this._frameQ.shift();
+			//while(skipFrame-- > 0 && this._frameQ.length > 0) this._frameQ.shift();
 		}
 
 		var frame = this._frameQ.shift();
 		if(frame)
 		{
-			this._player.renderFrameWebGL(frame);
+			this._player.renderFrame(frame);
 		}
 		this._lastRenderTime = now;
 	}
