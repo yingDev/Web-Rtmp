@@ -2,19 +2,21 @@
 在网页上播放RTMP视频流，通过Websocket。
 
 ## 基本原理
-- 服务端使用 [websockify](https://github.com/kanaka/websockify)  中转一个rtmp服务器地址。 ([yingDev的fork](https://github.com/yingDev/websockify) 去掉了base64子协议检查)
+- 服务端
+	- 使用 [websockify](https://github.com/kanaka/websockify)  wrap 一个 rtmp 服务器地址。 ([yingDev的fork](https://github.com/yingDev/websockify) 去掉了base64子协议检查)
 
     ```bash
     ./websockify.py 1999 <rtmp_server>:1935
     ```
-- 浏览器中使用 [node-rtmpapi](https://github.com/delian/node-rtmpapi) 解析 RTMP 协议，完成握手和通信。 ([yingDev的fork](https://github.com/yingDev/node-rtmpapi) 增加了浏览器支持、修正了几个错误)
+- 浏览器
+	- 使用 [node-rtmpapi](https://github.com/delian/node-rtmpapi) 解析 RTMP 协议，完成握手和通信。 ([yingDev的fork](https://github.com/yingDev/node-rtmpapi) 增加了浏览器支持、修正了几个错误)
 
-- 提取其中的 H264 视频流
+	- 提取其中的 H264 视频流
 
-- 发送给 [Broadway](https://github.com/mbebenita/Broadway) 解码
-    ```js
+	- 喂给 [Broadway](https://github.com/mbebenita/Broadway) 解码
+   	 ```js
     decoder.decode(frame);
-    ```
+   	 ```
     
 ## 使用
 ```js
