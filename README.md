@@ -1,6 +1,9 @@
 # Web-Rtmp
 在网页上播放RTMP视频流，通过Websocket。
 
+# WARNING ============
+这个项目很大程度上只能算可行性验证，不适合作为 library 使用。试验结论是：用 js 解码视频效率已经够低了，rtmp 协议增加了许多额外开销，如果单纯为了播放视频，并不明智。不如用纯粹的 ws 传送 h264 流。
+
 ## 基本原理
 - 服务端
 	- 使用 [websockify](https://github.com/kanaka/websockify)  wrap 一个 rtmp 服务器地址。 ([yingDev的fork](https://github.com/yingDev/websockify) 去掉了base64子协议检查)
